@@ -1,0 +1,120 @@
+This program is meant to display mathematical L-Systems
+
+IMPORTANT IMPORTANT IMPORTANT IMPORTANT:
+*  See bottom of text file for some fun L-Systems you can plug in, and test yourself
+
+L-Systems is an iterated mapping of string characters that encodes some instructions to draw it's shape.
+Eash L-System is composed of 
+*  Varibles, 
+*  Mappings,
+*  A starting seed
+*  A turn angle
+*  Drawing rules
+
+This app has a set drawing rule set of:
+*  Any variable will cause a straight line to be drawn
+*  Any +, or - character will rotate the direction of drawing by the specified angle
+
+To understand how l-systems work I will give an example with the preloaded inputs:
+Variables: (F, G)
+Mapping: (F -> F−G+F+G−F), (G -> GG)
+Seed: FG
+Angle: 120
+
+seed:	F
+iter1:	(F -> F-G+F+G-F)
+		F-G+F+G-F
+iter2:	(F -> F-G+F+G-F)-(G -> GG)+(F -> F-G+F+G-F)+(G -> GG)-(F -> F-G+F+G-F)
+		F-G+F+G-FGGF-G+F+G-FGGF-G+F+G-F
+iter3: ...
+
+When the program reads:
+*  "F-G+F+G-F"
+it parses it into the drawing instructions:
+*  "F" -> Draw line
+*  "-" -> Rotate line direction 120 degrees counter clockwise
+*  "G" -> Draw line
+*  "+" -> Rotate line direction 120 degrees clockwise
+*  "F" -> Draw line
+*  "+" -> Rotate line direction 120 degrees clockwise
+*  "G" -> Draw line
+*  "-" -> Rotate line direction 120 degrees counter clockwise
+*  "F" -> Draw line
+
+Ex: 
+*  Using these symbols if the angle is 90, the string F+F+F+F is just a square
+
+If you want to create your own L-System, just enter in your variables, mappings, seed, and angle 
+into the provided inputs.
+There are some formatting rules with the inputs of the L-System however!
+Variables:
+*  (Var1, Var2...)
+*  Must be enclosed in parenthesis
+*  Must have each variable be comma separated
+*  Variables must only be 1 character
+*  Variable names are case sensitive:
+-    A != a
+
+Mappings:
+*  (Var1 -> (+/-)*Var1Var2(+/-)*Var3)
+*  Must be enclosed in parenthesis
+*  Must have the variable that will be mapped be the first character
+*  Must have an arrow to indicate the mapping '->'
+*  Must have at least 1 variable or character afterwords
+*  All variable characters must of the variables set defined previously
+*  Optional +, or - symbols before or after any character
+
+Seed:
+*  (+/-)*Var1Var2(+/-)*Var3
+*  Must have a length greater than 0
+*  All variable characters must of the variables set defined previously
+
+Angle:
+*  Must be an int greater than 0
+
+
+Example L-systems:
+
+Sys1
+variables: (F, G)
+mapping: (F → F−G+F+G−F), (G → GG)
+seed: F−G−G
+angle: 120
+
+Sys2
+variables : (A, B)
+mapping  : (A → B−A−B), (B → A+B+A)
+seed  : A
+angle  : 60
+
+Sys3 (My favourite)
+variable: (F, G)
+mapping: (F → F+G), (G → F-G)
+seed: F
+angle: 90
+
+Sys4
+variables: (F)
+mapping: (F -> FF+F-F+F+FF)
+seed: F+F+F+F
+angle:  90
+
+Sys5
+variables: (F)
+mapping: (F -> F-F+F)
+seed = F+F+F
+angle: 120
+
+Sys6
+variables: (F, X, Y)
+mapping: (X -> XFX-YF-YF+FX+FX-YF-YFFX+YF+FXFXYF-FX+YF+FXFX+YF-FXYF-YF-FX+FX+YFYF-), (Y -> +FXFX-YF-YF+FX+FXYF+FX-YFYF-FX-YF+FXYFYF-FX-YFFX+FX+YF-YF-FX+FX+YFY)
+seed = -YF
+angle: 90
+
+Sys7
+variables: (F, X)
+mapping: (X -> XF-F+F-XF+F+XF-F+F-X)
+seed = F+XF+F+XF
+angle: 90
+
+
