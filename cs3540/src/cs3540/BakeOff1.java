@@ -34,7 +34,7 @@ public class BakeOff1 extends PApplet {
 	int hits = 0; // number of successful clicks
 	int misses = 0; // number of missed clicks
 	Robot robot; // initialized in setup
-	int windowLength = 700;
+	int windowSize = 700;
 	
 	PImage arrowImage;
 
@@ -44,7 +44,7 @@ public class BakeOff1 extends PApplet {
 	 * https://processing.org/reference/settings_.html#:~:text=The%20settings()%20method%20runs,commands%20in%20the%20Processing%20API.
 	 */
 	public void settings() {
-		size(windowLength, windowLength);
+		size(windowSize, windowSize);
 	}
 
 	/**
@@ -109,9 +109,13 @@ public class BakeOff1 extends PApplet {
 		fill(255); // set fill color to white
 		text((trialNum + 1) + " of " + trials.size(), 40, 20); // display what trial the user is on
 
-		for (int i = 0; i < 16; i++)// for all button
-			drawOmbreButton(i); // draw button
-
+		drawOmbreBackground();
+		
+		for (int i = 0; i < 16; i++) {
+			drawOmbreButton(i);
+			drawArrowButton(i);
+		}
+		
 		fill(255, 0, 0, 200); // set fill color to translucent red
 		ellipse(mouseX, mouseY, 20, 20); // draw user cursor as a circle with a diameter of 20
 
@@ -150,7 +154,7 @@ public class BakeOff1 extends PApplet {
 		// in this example design, I move the cursor back to the middle after each click
 		// Note. When running from eclipse the robot class affects the whole screen not
 		// just the GUI, so the mouse may move outside of the GUI.
-		robot.mouseMove(width/2, (height)/2); //on click, move cursor to roughly
+//		robot.mouseMove(width/2, (height)/2); //on click, move cursor to roughly
 		// center of window!
 	}
 
@@ -174,58 +178,7 @@ public class BakeOff1 extends PApplet {
 		rect(bounds.x, bounds.y, bounds.width, bounds.height);
 	}
 	
-	public void drawImage(PImage image, int x, int y, float angle) {
-		pushMatrix();
-		translate(x, y);
-		if (angle != 0.0) {
-			rotate(radians(angle));
-		}
-		image(image, 0, 0);
-		popMatrix();
-	}
-	
-	public PImage generateOmbreButtonImage(double xOrigin, double yOrigin, int xTarget, int yTarget, int steps, double startDist, double endDist) throws Exception {
-	    int[] startColor = {102, 255, 0}; // GREEN (R,G,B)
-	    int[] endColor   = {255, 102, 0}; // RED
-
-	    double redStep   = (endColor[0] - startColor[0]) / (double)steps;
-	    double greenStep = (endColor[1] - startColor[1]) / (double)steps;
-	    double blueStep  = (endColor[2] - startColor[2]) / (double)steps;
-
-	    double segmentDist = endDist / steps;
-	    double targetXCenter = xTarget + (buttonSize / 2.0);
-	    double targetYCenter = yTarget + (buttonSize / 2.0);
-
-	    PImage ombreImage = new PImage(buttonSize, buttonSize, ARGB);
-
-	    ombreImage.loadPixels();
-	    for (int yPos = 0; yPos < buttonSize; yPos++) {
-	        for (int xPos = 0; xPos < buttonSize; xPos++) {
-	            int pixelColor;
-	            if (xPos == 0 || yPos == 0 || xPos == buttonSize - 1 || yPos == buttonSize - 1) {
-	                pixelColor = 0xFF000000; // black border
-	            } 
-	            else {
-	                double dist = Math.sqrt(Math.pow(targetXCenter - (xOrigin + xPos), 2) +
-	                                        Math.pow(targetYCenter - (yOrigin + yPos), 2));
-	                double segment = Math.min(steps - 1, Math.max(0, Math.ceil(dist / segmentDist)));
-
-	                int r = Math.min(255, Math.max(0, (int)Math.round(startColor[0] + redStep * segment)));
-	                int g = Math.min(255, Math.max(0, (int)Math.round(startColor[1] + greenStep * segment)));
-	                int b = Math.min(255, Math.max(0, (int)Math.round(startColor[2] + blueStep * segment)));
-
-	                pixelColor = (0xFF << 24) | (r << 16) | (g << 8) | b;
-	            }
-	            ombreImage.pixels[yPos * buttonSize + xPos] = pixelColor;
-	        }
-	    }
-	    
-	    ombreImage.updatePixels();
-	    return ombreImage;
-	}
-	
-	public void drawOmbreButton(int i) {
-		Rectangle bounds = getButtonLocation(i);
+	public void drawOmbreBackground() {
 		Rectangle targetBounds = getButtonLocation(trials.get(trialNum));
 		
 		double startDist = Math.sqrt(2 * Math.pow(buttonSize, 2));
@@ -249,46 +202,125 @@ public class BakeOff1 extends PApplet {
             	endDist = cornerDist;
             }
 		}
-				
-		PImage buttonImage;
+	    
+	    PImage ombreImage;
 		try {
-			buttonImage = generateOmbreButtonImage(bounds.x, bounds.y, targetBounds.x, targetBounds.y, 20, startDist, endDist);
-		} 
-		catch (Exception e) {
+			ombreImage = generateOmbreButtonImage(0.0, 0.0, targetBounds.x, targetBounds.y, 100, startDist, endDist, windowSize);
+		} catch (Exception e) {
 			return;
 		}
-		
-		rect(bounds.x, bounds.y, bounds.width, bounds.height);
-		if (trials.get(trialNum) == i) {
-			fill(255, 255, 255);
-			rect(bounds.x, bounds.y, bounds.width, bounds.height);
-		}
-		else {
-			drawImage(buttonImage, bounds.x + (bounds.width / 2), bounds.y + (bounds.height / 2), 0);
-		}
+	    drawImage(ombreImage, (windowSize / 2), (windowSize / 2), 0);
 	}
 	
-	public void drawButtonArrow(int i) {
-		Rectangle bounds = getButtonLocation(i);
-		Rectangle targetBounds = getButtonLocation(trials.get(trialNum));
-		
-		double relativeX = bounds.x - targetBounds.x;
-		double relativeY = bounds.y - targetBounds.y;
-
-		float ang = (float) ((180 * Math.atan2(relativeY, relativeX)) / Math.PI) - 180;
-		
-		if (trials.get(trialNum) == i) {
-			fill(0, 255, 255);
+	public void drawImage(PImage image, int x, int y, float angle) {
+		pushMatrix();
+		translate(x, y);
+		if (angle != 0.0) {
+			rotate(radians(angle));
 		}
-		else {
-			fill(200);
-		}
-		
-		rect(bounds.x, bounds.y, bounds.width, bounds.height);
-		if (trials.get(trialNum) != i) {
-			drawImage(arrowImage, bounds.x + (bounds.width / 2), bounds.y + (bounds.height / 2), ang);
-		}
+		image(image, 0, 0);
+		popMatrix();
 	}
+	
+	public PImage generateOmbreButtonImage(double xOrigin, double yOrigin, int xTarget, int yTarget, int steps, double startDist, double endDist, int imageSize) throws Exception {
+	    int[] startColor = {102, 255, 0}; // GREEN (R,G,B)
+	    int[] endColor   = {255, 102, 0}; // RED
+
+	    double redStep   = (endColor[0] - startColor[0]) / (double)steps;
+	    double greenStep = (endColor[1] - startColor[1]) / (double)steps;
+	    double blueStep  = (endColor[2] - startColor[2]) / (double)steps;
+
+	    double segmentDist = (endDist - 100) / steps;
+	    double targetXCenter = xTarget + (buttonSize / 2.0);
+	    double targetYCenter = yTarget + (buttonSize / 2.0);
+
+	    PImage ombreImage = new PImage(imageSize, imageSize, ARGB);
+
+	    ombreImage.loadPixels();
+	    for (int yPos = 0; yPos < ombreImage.height; yPos++) {
+	        for (int xPos = 0; xPos < ombreImage.width; xPos++) {
+	            int pixelColor;
+	            if (xPos == 0 || yPos == 0 || xPos == ombreImage.width - 1 || yPos == ombreImage.height - 1) {
+	                pixelColor = 0xFF000000; // black border
+	            } 
+	            else {
+	                double dist = Math.sqrt(Math.pow(targetXCenter - (xOrigin + xPos), 2) +
+	                                        Math.pow(targetYCenter - (yOrigin + yPos), 2));
+	                double segment = Math.min(steps - 1, Math.max(0, Math.ceil(dist / segmentDist)));
+
+	                int r = Math.min(255, Math.max(0, (int)Math.round(startColor[0] + redStep * segment)));
+	                int g = Math.min(255, Math.max(0, (int)Math.round(startColor[1] + greenStep * segment)));
+	                int b = Math.min(255, Math.max(0, (int)Math.round(startColor[2] + blueStep * segment)));
+
+	                pixelColor = (0xFF << 24) | (r << 16) | (g << 8) | b;
+	            }
+	            ombreImage.pixels[yPos * ombreImage.width + xPos] = pixelColor;
+	        }
+	    }
+	    
+	    ombreImage.updatePixels();
+	    return ombreImage;
+	}
+	
+	public void drawOmbreButton(int i) {
+	    Rectangle bounds = getButtonLocation(i);
+	    Rectangle targetBounds = getButtonLocation(trials.get(trialNum));
+
+	    double startDist = Math.sqrt(2 * Math.pow(buttonSize, 2));
+
+	    Rectangle topLeftLocation = getButtonLocation(0);
+	    Rectangle topRightLocation = getButtonLocation(3);
+	    Rectangle bottomLeftLocation = getButtonLocation(11);
+	    Rectangle bottomRightLocation = getButtonLocation(15);
+	    Point[] corners = {
+	        new Point(topLeftLocation.x, topLeftLocation.y), 
+	        new Point(topRightLocation.x + buttonSize, topRightLocation.y), 
+	        new Point(bottomLeftLocation.x, bottomLeftLocation.y + buttonSize), 
+	        new Point(bottomRightLocation.x + buttonSize, bottomRightLocation.y + buttonSize)
+	    };
+
+	    double endDist = 0;
+	    for (Point corner : corners) {
+	        double cornerDist = Math.sqrt(Math.pow((targetBounds.x + (buttonSize / 2.0)) - corner.x, 2) +
+	                                      Math.pow((targetBounds.y + (buttonSize / 2.0)) - corner.y, 2));
+	        if (cornerDist > endDist) {
+	            endDist = cornerDist;
+	        }
+	    }
+
+	    PImage buttonImage;
+	    try {
+	        buttonImage = generateOmbreButtonImage(bounds.x, bounds.y, targetBounds.x, targetBounds.y, 
+	                                               20, startDist, endDist, buttonSize);
+	    } catch (Exception e) {
+	        return;
+	    }
+
+	    // Draw ombre background
+	    drawImage(buttonImage, bounds.x + (bounds.width / 2), bounds.y + (bounds.height / 2), 0);
+
+	    // Highlight the target button with a translucent overlay (optional)
+	    if (trials.get(trialNum) == i) {
+	        fill(255, 255, 255, 120); // semi-transparent white
+	        rect(bounds.x, bounds.y, bounds.width, bounds.height);
+	    }
+	}
+	
+	public void drawArrowButton(int i) {
+	    Rectangle bounds = getButtonLocation(i);
+	    Rectangle targetBounds = getButtonLocation(trials.get(trialNum));
+
+	    double relativeX = bounds.x - targetBounds.x;
+	    double relativeY = bounds.y - targetBounds.y;
+
+	    float ang = (float) ((180 * Math.atan2(relativeY, relativeX)) / Math.PI) - 180;
+
+	    if (trials.get(trialNum) != i) {
+	        // Just draw the arrow over the ombre
+	        drawImage(arrowImage, bounds.x + (bounds.width / 2), bounds.y + (bounds.height / 2), ang);
+	    }
+	}
+
 
 	public void drawButtonCross(int i) {
 		Rectangle bounds = getButtonLocation(i);
