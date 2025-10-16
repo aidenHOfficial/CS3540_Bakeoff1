@@ -28,7 +28,9 @@ public class BakeOff1 extends PApplet {
 	int trialNum = 0; // the current trial number (indexes into trials array above)
 	int startTime = 0; // time starts when the first click is captured
 	int finishTime = 0; // records the time of the final click
-	int timeTaken = 0;
+	float timeTaken = 0;
+	double cursorTrialStartingX = 0.0;
+	double cursorTrialStartingY = 0.0;
 	int hits = 0; // number of successful clicks
 	static int misses = 0; // number of missed clicks
 	static int numRepeats = 10; // sets the number of times each button repeats in the test
@@ -185,15 +187,15 @@ public class BakeOff1 extends PApplet {
 		boolean inBounds = ((mouseX > bounds.x && mouseX < bounds.x + bounds.width)
 				&& (mouseY > bounds.y && mouseY < bounds.y + bounds.height));
 		
-		timeTaken = millis() - timeTaken;
+		timeTaken = ((float) millis() / (float) 1000) - timeTaken;
 		
-		String csvString = trialNum + "," + id + "," + mouseX + "," +  mouseY + "," +  bounds.getCenterX() + "," +  bounds.getCenterY() + "," +  selectedButtonSize + "," +  timeTaken + "," +  inBounds + "\n";
+		String csvString = trialNum + "," + id + "," + cursorTrialStartingX + "," +  cursorTrialStartingY + "," +  bounds.getCenterX() + "," +  bounds.getCenterY() + "," +  selectedButtonSize + "," +  timeTaken + "," +  inBounds + "\n";
 		System.out.println(csvString);
 		
 		if (trialNum > 0) { // First trial doesn't count to the total
 			csvData += csvString;
 			
-			timeTaken = millis();
+			timeTaken = ((float) millis() / (float) 1000);
 			
 			if (inBounds)
 			{
@@ -210,7 +212,8 @@ public class BakeOff1 extends PApplet {
 			}
 		}
 
-
+		cursorTrialStartingX = mouseX;
+		cursorTrialStartingY = mouseY;
 		trialNum++;
 	}
 
